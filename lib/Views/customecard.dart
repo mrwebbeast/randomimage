@@ -77,10 +77,12 @@ class _CustomCardState extends State<CustomCard> {
                           CupertinoIcons.heart_fill,
                           color: Colors.red,
                         )
-                      : const Icon(
-                          CupertinoIcons.heart_fill,
-                          color: Colors.black,
-                        ),
+                      : heart == "Black"
+                          ? const Icon(
+                              CupertinoIcons.heart_fill,
+                              color: Colors.black,
+                            )
+                          : const Text("No Heart"),
               backgroundColor: Colors.white,
               elevation: 0,
             ),

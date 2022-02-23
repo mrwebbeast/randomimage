@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:randomimage/Services/counter_prefs.dart';
 
 enum CardStatus { up, left, right }
 
@@ -37,27 +38,27 @@ class CardProvider with ChangeNotifier {
     if (x >= delta) {
       print("right");
       _heart = "Blue";
-
+      Counter().incrementBlueHearts();
       notifyListeners();
       print(_heart);
       return _heart;
     } else if (x <= -delta / 2) {
       print("left");
       _heart = "Red";
-
+      Counter().incrementRedHearts();
       notifyListeners();
       print(_heart);
       return _heart;
     } else if (y <= -delta / 2) {
       print("top");
       _heart = "Black";
-
       notifyListeners();
       print(_heart);
       return _heart;
     } else {
       print("bottom");
       _heart = "Black";
+      Counter().incrementBlackHearts();
       notifyListeners();
       print(_heart);
       return _heart;

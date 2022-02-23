@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../Services/authentication.dart';
+import 'forgetpassword.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -26,16 +28,25 @@ class _LoginState extends State<Login> {
     });
   }
 
+  signInWithEmail() async {
+    if (loginFormKey.currentState!.validate()) {
+      setState(() {
+        isLoading = true;
+      });
+      await Authentication.signInWithEmail(context, email, password);
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
-          "Random Image",
-          style: TextStyle(color: Colors.grey.shade500),
-        ),
+        title: const Text("Sign In"),
         elevation: 0,
       ),
       body: isLoading
@@ -61,34 +72,125 @@ class _LoginState extends State<Login> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "SIGN IN",
+                        "SIGN In",
                         style: TextStyle(color: Colors.blue, fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(
                         height: 30,
                       ),
-
+                      TextFormField(
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.email),
+                          labelText: "Email",
+                          hintText: "Email",
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.blueAccent),
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return "Enter Email id";
+                          } else if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]").hasMatch(val)) {
+                            return "Please Enter valid Email";
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          email = value;
+                        },
+                      ),
                       const SizedBox(height: 10),
-//Google Login Button
-                      Card(
-                        child: SizedBox(
-                          height: 150,
-                          width: MediaQuery.of(context).size.width,
-                          child: const Center(child: Text("Random Image")),
+                      TextFormField(
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: "Password",
+                          prefixIcon: const Icon(Icons.lock),
+                          hintText: "Password",
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.blueAccent),
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return "Enter Password";
+                          } else if (val.length < 6) {
+                            return "invalid Password !";
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          password = value;
+                        },
+                      ),
+//Forget Password  Button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          CupertinoButton(
+                            child: const Text("Forget Password"),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ForgetPassword(),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+//Email Login Button
+                      CupertinoButton(
+                        color: Colors.blue,
+                        child: const Text("Sign In"),
+                        onPressed: () {
+                          signInWithEmail();
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        "OR",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+//Google Login Button
                       InkWell(
                         onTap: () {
                           signInWithGoogle();
                         },
-                        child: Center(
-                          child: Image.asset(
-                            "assets/images/btn_google_signin.png",
-                            height: 45,
-                          ),
+                        child: Image.asset(
+                          "assets/images/btn_google_signin.png",
+                          height: 45,
                         ),
                       ),
                       const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "don't have an Account? ",
+                            style: TextStyle(
+                              fontSize: 15,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Navigator.pushReplacementNamed(context, "/signup");
+                            },
+                            child: const Text(
+                              "Sign up",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
                     ],
                   ),
                 ),

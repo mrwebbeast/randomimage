@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:randomimage/Services/authentication.dart';
+import 'package:randomimage/Services/counter_prefs.dart';
 import 'package:randomimage/Views/customecard.dart';
 import 'package:randomimage/dogs_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -19,7 +21,6 @@ final currentUser = FirebaseAuth.instance.currentUser;
 
 class _HomeState extends State<Home> {
   String api = "https://dog.ceo/api/breeds/image/random";
-
   late Future<DogsModel> fetchedDogs;
 
   Future<DogsModel> fetchImage() async {
@@ -32,27 +33,17 @@ class _HomeState extends State<Home> {
     }
   }
 
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  late Future<int> _counter;
-  Future<void> counterIncrement() async {
-    final prefs = await _prefs;
-    int counter = (prefs.getInt("Counter") ?? 0) + 1;
-    setState(() {
-      _counter = prefs.setInt("Counter", counter).then((value) => counter);
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    _counter = _prefs.then((prefs) {
-      return (prefs.getInt("Counter") ?? 0);
-    });
-    fetchedDogs = fetchImage();
+    for (int i = 0; i < 10; i++) {
+      fetchedDogs = fetchImage();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<Counter>(context).loadHearts();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -60,19 +51,6 @@ class _HomeState extends State<Home> {
         centerTitle: true,
         title: Text("${currentUser!.displayName}"),
         actions: [
-          FutureBuilder<int>(
-            future: _counter,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Center(
-                  child: Text("${(snapshot.data)}"),
-                );
-              } else if (snapshot.hasError) {
-                return const Center(child: Text("0"));
-              }
-              return const Center(child: CircularProgressIndicator());
-            },
-          ),
           IconButton(
               onPressed: () {
                 Authentication.signOut(context);
@@ -80,24 +58,72 @@ class _HomeState extends State<Home> {
               icon: const Icon(Icons.logout))
         ],
       ),
-      body: FutureBuilder<DogsModel>(
-        future: fetchedDogs,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            String imgUrl = snapshot.data!.imgUrl;
-            return GestureDetector(
-              onPanCancel: () {
-                counterIncrement();
-              },
-              child: Center(
-                child: CustomCard(imgUrl: imgUrl),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          FutureBuilder<DogsModel>(
+            future: fetchedDogs,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                String imgUrl = snapshot.data!.imgUrl;
+                return Center(
+                  child: CustomCard(imgUrl: imgUrl),
+                );
+              } else if (snapshot.hasError) {
+                return const Center(child: Text("Oops Something Went Wrong"));
+              }
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    CupertinoIcons.heart_fill,
+                    color: Colors.red,
+                    size: 48,
+                  ),
+                  Text(
+                    "${Provider.of<Counter>(context).redHearts}",
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  )
+                ],
               ),
-            );
-          } else if (snapshot.hasError) {
-            return const Center(child: Text("Oops Something Went Wrong"));
-          }
-          return const Center(child: CircularProgressIndicator());
-        },
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    CupertinoIcons.heart_fill,
+                    color: Colors.black,
+                    size: 48,
+                  ),
+                  Text(
+                    "${Provider.of<Counter>(context).blackHearts}",
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  )
+                ],
+              ),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    CupertinoIcons.heart_fill,
+                    color: Colors.blue,
+                    size: 48,
+                  ),
+                  Text(
+                    "${Provider.of<Counter>(context).blueHearts}",
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  )
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
