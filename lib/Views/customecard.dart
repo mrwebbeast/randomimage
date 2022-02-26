@@ -32,22 +32,6 @@ class _CustomCardState extends State<CustomCard> {
   }
 
   Widget buildFrontCard() => GestureDetector(
-        child: LayoutBuilder(builder: (context, constraints) {
-          final provider = Provider.of<CardProvider>(context);
-          final position = provider.position;
-          final angle = provider.angle * pi / 180;
-          final center = constraints.smallest.center(Offset.zero);
-          final rotateMatrix = Matrix4.identity()
-            ..translate(center.dx, center.dy)
-            ..rotateZ(angle)
-            ..translate(-center.dx, -center.dy);
-          int milliseconds = provider.isDragging ? 0 : 400;
-          return AnimatedContainer(
-            duration: Duration(milliseconds: milliseconds),
-            transform: Matrix4.identity()..translate(position.dx, position.dy),
-            child: buildCard(),
-          );
-        }),
         onPanStart: (details) {
           final provider = Provider.of<CardProvider>(context, listen: false);
           provider.startPosition(details);
@@ -88,6 +72,22 @@ class _CustomCardState extends State<CustomCard> {
             ),
           );
         },
+        child: LayoutBuilder(builder: (context, constraints) {
+          final provider = Provider.of<CardProvider>(context);
+          final position = provider.position;
+          final angle = provider.angle * pi / 180;
+          final center = constraints.smallest.center(Offset.zero);
+          final rotateMatrix = Matrix4.identity()
+            ..translate(center.dx, center.dy)
+            ..rotateZ(angle)
+            ..translate(-center.dx, -center.dy);
+          int milliseconds = provider.isDragging ? 0 : 400;
+          return AnimatedContainer(
+            duration: Duration(milliseconds: milliseconds),
+            transform: Matrix4.identity()..translate(position.dx, position.dy),
+            child: buildCard(),
+          );
+        }),
       );
   Widget buildCard() => Padding(
         padding: const EdgeInsets.all(8.0),
